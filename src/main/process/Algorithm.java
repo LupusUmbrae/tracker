@@ -67,7 +67,7 @@ public class Algorithm {
 			}
 			nearbyLat = nearbyLat/(nearbyUsers.size());
 			nearbyLon = nearbyLon/(nearbyUsers.size());
-			nearAngle = Math.tan(((nearbyLat - curLat) / (nearbyLon - curLng))) + 0.5*Math.PI;
+			nearAngle = Math.tan(((nearbyLat - curLat) / (nearbyLon - curLng))) + Math.PI;
 		}
 		else {
 			nearAngle = 2*Math.PI*rand.nextDouble();
