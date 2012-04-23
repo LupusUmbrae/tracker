@@ -6,10 +6,11 @@ public class Person {
 	private int id;
 	private Double vol;
 
-	public Person(int id) {
+	public Person(int id, Double vol) {
 		lat = 31.0000001d;
 		lon = 31.0000001d;
 		this.id = id;
+		this.vol = vol;
 	}
 	
 	public double getVol() {

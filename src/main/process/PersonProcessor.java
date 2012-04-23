@@ -15,50 +15,65 @@ public class PersonProcessor {
 	private static BlockingQueue<Person> peopleMove = new LinkedBlockingQueue<Person>();
 	private static BlockingQueue<Person> peopleMoved = new LinkedBlockingQueue<Person>();
 
-	Move mover = new Move();
-	ArrayList<Move> movers = new ArrayList<Move>();
+	private ArrayList<Move> movers = new ArrayList<Move>();
+	private ArrayList<Person> people;
 
 	/**
 	 * 
 	 */
-	public PersonProcessor() {
-
+	public PersonProcessor(int threads, ArrayList<Person> people) {
+		while (threads > 0) {
+			movers.add(new Move(this));
+			threads--;
+		}
+		this.people = people;
+		peopleMove.addAll(people);
 	}
 
 	/**
 	 * 
 	 * @throws InterruptedException
+	 * @throws IOException
 	 */
-	public void movePeople() throws InterruptedException {
-		mover.run();
-
+	public void movePeople() throws InterruptedException, IOException {
+		for (Move mover : movers) {
+			mover.start();
+		}
 	}
 
 	/**
 	 * 
 	 */
 	public void stopPeople() {
-
+		for (Move mover : movers) {
+			mover.end();
+		}
 	}
 
 	/**
 	 * 
 	 * @throws IOException
+	 * @throws InterruptedException 
 	 */
-	private void exportResults() throws IOException {
+	public void exportResults() throws IOException, InterruptedException {
 		File file = new File("track" + System.currentTimeMillis() + ".txt");
 		FileWriter writer = new FileWriter(file);
 		BufferedWriter out = new BufferedWriter(writer);
+		boolean filesLeft = true;
 		// Write to file
-		while (!peopleMoved.isEmpty()) {
-			Person person = peopleMove.poll();
+		while (filesLeft) {
+			Person person = pollPeopleMoved();
 			if (person != null) {
-				out.write(String.format("%d,%s,%s", person.getId(), person
+				out.write(String.format("%d,%s,%s\n", person.getId(), person
 						.getLat().toString(), person.getLon().toString()));
+			} else {
+				filesLeft = false;
 			}
 		}
 		out.close();
 		writer.close();
+
+		peopleMove.addAll(people);
 	}
 
 	/**
@@ -66,10 +81,10 @@ public class PersonProcessor {
 	 * @return
 	 * @throws InterruptedException
 	 */
-	protected Person takePeopleMoved() throws InterruptedException {
+	protected Person pollPeopleMoved(){
 		Person person;
 		synchronized (peopleMoved) {
-			person = peopleMoved.take();
+			person = peopleMoved.poll();
 		}
 		return person;
 	}
@@ -107,5 +122,14 @@ public class PersonProcessor {
 		synchronized (peopleMove) {
 			peopleMove.put(person);
 		}
+	}
+	
+	public Person[] getAllPeople(){
+		Person[] peopleArray;
+		synchronized (people) {
+			peopleArray = new Person[people.size()];
+			people.toArray(peopleArray);
+		}
+		return peopleArray;
 	}
 }

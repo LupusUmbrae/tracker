@@ -5,26 +5,32 @@ import main.types.Person;
 public class Move extends Thread {
 
 	private boolean run = true;
-	
+	PersonProcessor processor;
+
+	public Move(PersonProcessor processor) {
+		this.processor = processor;
+	}
+
 	public void run() {
-		// Doesnt need to stop
-		PersonProcessor processor = new PersonProcessor();
 		Person person;
-		while(run){
+		Person[] people;
+		Algorithm movePerson = new Algorithm();
+		while (run) {
 			try {
 				person = processor.takePeopleMove();
 				// Move the person
-				
+				people = processor.getAllPeople();
+				person = movePerson.run(people, person);
 				processor.putPeopleMoved(person);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-				System.out.println("Will carry on.. but might want to look into this");
+				System.out
+						.println("Will carry on.. but might want to look into this");
 			}
 		}
 	}
-	
-	public void end(){
+
+	public void end() {
 		run = false;
 	}
 }
-
