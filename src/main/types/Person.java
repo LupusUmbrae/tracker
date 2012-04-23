@@ -4,11 +4,20 @@ public class Person {
 	private Double lat;
 	private Double lon;
 	private int id;
+	private Double vol;
 
 	public Person(int id) {
 		lat = 31.0000001d;
 		lon = 31.0000001d;
 		this.id = id;
+	}
+	
+	public double getVol() {
+		return vol;
+	}
+	
+	public void setVol(double vol){
+		this.vol = vol;
 	}
 
 	public Double getLat() {

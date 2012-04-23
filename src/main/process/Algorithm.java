@@ -12,9 +12,6 @@ public class Algorithm {
 	public static final double CENTRE_LON = 30.0;
 	public static final double RADIUS = 5.0;
 	
-	int users;
-	int runs;
-	int pref;
 	double modifier; // gaussian modifier for more/less extreme movement. Higher = more likely.
 	Random rand = new Random();
 	LinkedList<Person> nearbyUsers = new LinkedList<Person>();
@@ -33,7 +30,6 @@ public class Algorithm {
 	
 	
 	public Algorithm(int users){
-		init(users);
 	}
 	
 	/**
@@ -46,7 +42,7 @@ public class Algorithm {
 	public Person run(Person[] usersPos, Person curPos){
 		this.usersPos = usersPos;
 		this.curPos = this.newPos = curPos;
-		volatility = usersVol[curPos.getId()];
+		volatility = curPos.getVol();
 		curLat = curPos.getLat();
 		curLng = curPos.getLon();
 		
@@ -112,20 +108,13 @@ public class Algorithm {
 	 * @param users the number of users required
 	 */
 	
-	private void init(int users) {
-		this.users = users;
-		usersVol = new double[users];
-		usersPos = new Person[users];
+	public double genVol(double modifier) {
 		
 		if (modifier == 1){
-		for(int x = 0; x < users; x++){
-			usersVol[x] = rand.nextGaussian();
-		}
+			return rand.nextGaussian();
 		}
 		else {
-			for(int x = 0; x < users; x++){
-			usersVol[x] = biasVolatility();	
-			}
+			return biasVolatility();	
 		}
 	}
 
@@ -135,9 +124,9 @@ public class Algorithm {
 	 */
 	
 	private double biasVolatility(){
-		volatility = rand.nextGaussian();
+		double vol = rand.nextGaussian();
 		int sign = 1;
-		if(volatility < 0) sign = -1;
+		if(vol < 0) sign = -1;
 		return (sign*Math.pow(Math.abs(volatility),1 / modifier));
 	}
 }
