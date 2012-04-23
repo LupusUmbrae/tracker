@@ -13,17 +13,17 @@ public class Algorithm {
 	int pref;
 	double modifier;
 	Random rand = new Random();
-	Position centre;
+	Person centre;
 	double bias;
-	LinkedList<Position> nearbyUsers = new LinkedList<Position>();
+	LinkedList<Person> nearbyUsers = new LinkedList<Person>();
 	
-	Double volatility;
-	Double curLat;
-	Double curLng;
-	Position curPos;
-	Position newPos;
-	Double usersVol[];
-	Position usersPos[];
+	double volatility;
+	double curLat;
+	double curLng;
+	Person curPos;
+	Person newPos;
+	double usersVol[];
+	Person usersPos[];
 	
 	
 	public Algorithm(int users, double centreLat, double centreLng){
@@ -32,7 +32,7 @@ public class Algorithm {
 		centre.setLng(centreLng);
 	}
 	
-	public Position run(Position[] usersPos, Position curPos){
+	public Person run(Person[] usersPos, Person curPos){
 		this.usersPos = usersPos;
 		this.curPos = curPos;
 		volatility = usersVol[curPos.getUser()];
@@ -42,7 +42,7 @@ public class Algorithm {
 		volatility = volatility + rand.nextDouble();
 		pref = preference(volatility);
 		
-		for(Position genUser : usersPos){
+		for(Person genUser : usersPos){
 			if ( Math.abs(genUser.getLat() - curLat) < MAX_MOVE_SPEED && Math.abs(genUser.getLng() - curLng) < MAX_MOVE_SPEED){
 				nearbyUsers.add(genUser);
 			}
@@ -61,7 +61,7 @@ public class Algorithm {
 	private void init(int users) {
 		this.users = users;
 		usersVol = new Double[users];
-		usersPos = new Position[users];
+		usersPos = new Person[users];
 		
 		if (modifier == 1){
 		for(int x = 0; x < users; x++){
