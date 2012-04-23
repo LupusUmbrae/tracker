@@ -1,55 +1,109 @@
-package com.logica.trace;
+package main.process;
 
 import java.util.LinkedList;
 import java.util.Random;
 
+import main.types.Person;
+
 public class Algorithm {
 
 	public static final double MAX_MOVE_SPEED = 0.2;
-	public static final double THRESHOLD = 0.7;
-
+	public static final double CENTRE_LAT = 30.0;
+	public static final double CENTRE_LON = 30.0;
+	public static final double RADIUS = 5.0;
+	
 	int users;
 	int runs;
 	int pref;
-	double modifier;
+	double modifier; // gaussian modifier for more/less extreme movement. Higher = more likely.
 	Random rand = new Random();
-	Person centre;
-	double bias;
 	LinkedList<Person> nearbyUsers = new LinkedList<Person>();
 	
 	double volatility;
 	double curLat;
 	double curLng;
+	double nearbyLat;
+	double nearbyLon;
 	Person curPos;
 	Person newPos;
 	double usersVol[];
 	Person usersPos[];
+	double nearAngle;
+	double moveAngle;
 	
 	
-	public Algorithm(int users, double centreLat, double centreLng){
+	public Algorithm(int users){
 		init(users);
-		centre.setLat(centreLat);
-		centre.setLng(centreLng);
 	}
+	
+	/**
+	 * takes as the input a list of current user positions, and the current user. Uses this current user and the positions to work out a movement distance
+	 * @param usersPos List of every user currently being tracked
+	 * @param curPos Current user to track
+	 * @return a Person, updating the curPos user with the new position.
+	 */
 	
 	public Person run(Person[] usersPos, Person curPos){
 		this.usersPos = usersPos;
-		this.curPos = curPos;
-		volatility = usersVol[curPos.getUser()];
+		this.curPos = this.newPos = curPos;
+		volatility = usersVol[curPos.getId()];
 		curLat = curPos.getLat();
-		curLng = curPos.getLng();
+		curLng = curPos.getLon();
 		
-		volatility = volatility + rand.nextDouble();
-		pref = preference(volatility);
+		// checks to see if another person is within movement range of the current person
 		
 		for(Person genUser : usersPos){
-			if ( Math.abs(genUser.getLat() - curLat) < MAX_MOVE_SPEED && Math.abs(genUser.getLng() - curLng) < MAX_MOVE_SPEED){
+			if ( Math.abs(genUser.getLat() - curLat) < MAX_MOVE_SPEED && Math.abs(genUser.getLon() - curLng) < MAX_MOVE_SPEED){
 				nearbyUsers.add(genUser);
 			}
 		}
 		
+		// works out the average angle of the nearby users in relation to the current user, and sets the 'nearAngle' to the opposite direction
 		
+		if (!nearbyUsers.isEmpty()){
+			for (Person p : nearbyUsers){
+				nearbyLat += p.getLat();
+				nearbyLon += p.getLon();
+			}
+			nearbyLat = nearbyLat/(nearbyUsers.size());
+			nearbyLon = nearbyLon/(nearbyUsers.size());
+			nearAngle = Math.tan(((nearbyLat - curLat) / (nearbyLon - curLng))) + 0.5*Math.PI;
+		}
+		else {
+			nearAngle = 2*Math.PI*rand.nextDouble();
+		}
 		nearbyUsers.clear();
+		
+		// works out the movement angle by using the volatility to determine the randomness of movement towards/away from current users.
+		
+		moveAngle = nearAngle + (volatility+1)*rand.nextDouble()*(Math.PI/2);
+		
+		newPos = movement(moveAngle);
+		
+		nearbyLat = 0;
+		nearbyLon = 0;
+		
+		return newPos;
+	}
+
+	/**
+	 * takes in an angle arguement, works out a random distance moved and checks it against the location of the circle to make sure the person has not
+	 * left the circle. Future versions may include the chance to leave the circle. 
+	 * @param moveAngle2 the angle of movement
+	 * @return the new position
+	 */
+	
+	private Person movement(double moveAngle2) {
+		double moveSpeed = rand.nextDouble()*MAX_MOVE_SPEED;
+		curLat = moveSpeed*Math.sin(moveAngle2);
+		curLng = moveSpeed*Math.cos(moveAngle2);
+		
+		//TODO - FIX ME! RETARD! check circle movement
+		
+			
+		newPos.setLat(curLat);
+		newPos.setLon(curLng);
+		
 		return newPos;
 	}
 
@@ -60,7 +114,7 @@ public class Algorithm {
 	
 	private void init(int users) {
 		this.users = users;
-		usersVol = new Double[users];
+		usersVol = new double[users];
 		usersPos = new Person[users];
 		
 		if (modifier == 1){
@@ -86,23 +140,4 @@ public class Algorithm {
 		if(volatility < 0) sign = -1;
 		return (sign*Math.pow(Math.abs(volatility),1 / modifier));
 	}
-	
-	/**
-	 * checks the volatility and assigns it a preference based on an initial THRESHOLD value
-	 * @param vol the volatility to check
-	 * @return returns -1 if preference to flee, 0 if neutral, 1 if preference to approach
-	 */
-	
-	private int preference(double vol){
-		if(Math.abs(vol) > THRESHOLD){
-			if(vol > 0){
-				return 1;
-			}
-			else {
-				return -1;
-			}
-		}
-		return 0;
-	}
-	
 }
