@@ -137,6 +137,8 @@ public class Algorithm {
 
 		if (modifier == 1) {
 			return rand.nextGaussian();
+		} else if (modifier == 0) {
+			return 0;
 		} else {
 			return biasVolatility();
 		}
@@ -156,4 +158,23 @@ public class Algorithm {
 			sign = -1;
 		return (sign * Math.pow(Math.abs(volatility), 1 / modifier));
 	}
-}
+	
+	/**
+	 * Generates a random latitude within the given parameters
+	 * @return returns a latitude position
+	 */
+	
+	public double genLat() {
+		return (rand.nextDouble()*RADIUS*2 + CENTRE_LAT - RADIUS);
+	}
+	
+	/**
+	 * Generates a random longitude within the given parameters
+	 * @return returns a longitude position
+	 */
+	
+	public double genLon() {
+		return (rand.nextDouble()*RADIUS*2 + CENTRE_LON - RADIUS);
+		
+	}
+}	
