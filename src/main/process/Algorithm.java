@@ -12,8 +12,7 @@ public class Algorithm {
 	public static final double CENTRE_LON = 30.0;
 	public static final double RADIUS = 5.0;
 
-	double modifier; // gaussian modifier for more/less extreme movement. Higher
-						// = more likely.
+	double modifier; // gaussian modifier for more/less extreme movement. Higher = more likely.
 	Random rand = new Random();
 	LinkedList<Person> nearbyUsers = new LinkedList<Person>();
 
@@ -63,37 +62,42 @@ public class Algorithm {
 
 		// works out the average angle of the nearby users in relation to the
 		// current user, and sets the 'nearAngle' to the opposite direction
-
+		
+		nearbyLat = curLat;
+		nearbyLon = curLng;
+		
 		if (!nearbyUsers.isEmpty()) {
 			for (Person p : nearbyUsers) {
 				nearbyLat += p.getLat();
 				nearbyLon += p.getLon();
 			}
-			nearbyLat = nearbyLat / (nearbyUsers.size());
-			nearbyLon = nearbyLon / (nearbyUsers.size());
+			nearbyLat = nearbyLat / (nearbyUsers.size()+1);
+			nearbyLon = nearbyLon / (nearbyUsers.size()+1);
 			nearAngle = Math.tan(((nearbyLat - curLat) / (nearbyLon - curLng)))
 					+ Math.PI;
 		} else {
-			nearAngle = 2 * Math.PI * rand.nextDouble();
+			nearAngle = Math.PI * rand.nextDouble(); // means less backtracking
 		}
 		nearbyUsers.clear();
 
 		// works out the movement angle by using the volatility to determine the
 		// randomness of movement towards/away from current users.
 
+		if (Math.sqrt(Math.pow(curLat - CENTRE_LAT,2) + Math.pow(curLng - CENTRE_LON, 2)) != RADIUS){ // Checks to see if the current point is on the border.
 		moveAngle = nearAngle + (volatility + 1) * rand.nextDouble()
 				* (Math.PI / 2);
-
+		}
+		else { // if on the edge of the circle, forces the target inwards but still away from the
+			double centreAngle = Math.tan((curLat - CENTRE_LAT) / (curLng - CENTRE_LON)) + Math.PI;
+			moveAngle =  centreAngle - (centreAngle - nearAngle) + ((volatility + 1) * rand.nextGaussian() * (Math.PI / 2));
+		}
 		newPos = movement(moveAngle);
-
-		nearbyLat = 0;
-		nearbyLon = 0;
 
 		return newPos;
 	}
 
 	/**
-	 * takes in an angle arguement, works out a random distance moved and checks
+	 * takes in an angle argument, works out a random distance moved and checks
 	 * it against the location of the circle to make sure the person has not
 	 * left the circle. Future versions may include the chance to leave the
 	 * circle.
@@ -104,12 +108,17 @@ public class Algorithm {
 	 */
 
 	private Person movement(double moveAngle2) {
-		double moveSpeed = rand.nextDouble() * MAX_MOVE_SPEED;
+		double moveSpeed = (rand.nextDouble() * MAX_MOVE_SPEED);
+		if (moveSpeed < (MAX_MOVE_SPEED/2)) moveSpeed = (MAX_MOVE_SPEED/2);
 		curLat = moveSpeed * Math.sin(moveAngle2);
 		curLng = moveSpeed * Math.cos(moveAngle2);
 
-		// TODO - FIX ME! RETARD! check circle movement
-
+		double distFromCentre = Math.sqrt(Math.pow(curLat - CENTRE_LAT,2) + Math.pow(curLng - CENTRE_LON, 2));
+		if(distFromCentre > RADIUS){
+			curLat = RADIUS*(curLat/ (curLat + curLng));
+			curLng = RADIUS*(curLng/ (curLat + curLng));
+		}
+			
 		newPos.setLat(curLat);
 		newPos.setLon(curLng);
 
