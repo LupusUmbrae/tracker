@@ -6,9 +6,9 @@ public class Person {
 	private int id;
 	private Double vol;
 
-	public Person(int id, Double vol) {
-		lat = 31.0000001d;
-		lon = 31.0000001d;
+	public Person(int id, Double vol, Double lat, Double lon) {
+		this.lat = lat;
+		this.lon = lon;
 		this.id = id;
 		this.vol = vol;
 	}
