@@ -11,7 +11,8 @@ public class Algorithm {
 	public static final double CENTRE_LAT = 30.0;
 	public static final double CENTRE_LON = 30.0;
 	public static final double RADIUS = 5.0;
-
+	public static final double TOLERANCE = 0.00000001;
+	
 	double modifier; // gaussian modifier for more/less extreme movement. Higher = more likely.
 	Random rand = new Random();
 	LinkedList<Person> nearbyUsers = new LinkedList<Person>();
@@ -73,7 +74,7 @@ public class Algorithm {
 			}
 			nearbyLat = nearbyLat / (nearbyUsers.size());
 			nearbyLon = nearbyLon / (nearbyUsers.size());
-			if (Math.abs((nearbyLat - curLat) - (nearbyLon - curLng)) < 0.0000001) {
+			if (Math.abs((nearbyLat - curLat) - (nearbyLon - curLng)) < TOLERANCE) {
 				nearAngle = Math.PI * rand.nextDouble();
 			} else {
 			nearAngle = Math.tan(((nearbyLat - curLat) / (nearbyLon - curLng)))
@@ -87,7 +88,7 @@ public class Algorithm {
 		// works out the movement angle by using the volatility to determine the
 		// randomness of movement towards/away from current users.
 
-		if (Math.sqrt(Math.pow(curLat - CENTRE_LAT,2) + Math.pow(curLng - CENTRE_LON, 2)) != RADIUS){ // Checks to see if the current point is on the border.
+		if (Math.sqrt(Math.abs(Math.pow(curLat - CENTRE_LAT,2) + Math.pow(curLng - CENTRE_LON, 2)) - RADIUS) < TOLERANCE){ // Checks to see if the current point is on the border.
 		moveAngle = nearAngle + (volatility + 1) * rand.nextDouble()
 				* (Math.PI / 2);
 		}
