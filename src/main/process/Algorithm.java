@@ -63,18 +63,22 @@ public class Algorithm {
 		// works out the average angle of the nearby users in relation to the
 		// current user, and sets the 'nearAngle' to the opposite direction
 		
-		nearbyLat = curLat;
-		nearbyLon = curLng;
+		nearbyLat = 0;
+		nearbyLon = 0;
 		
 		if (!nearbyUsers.isEmpty()) {
 			for (Person p : nearbyUsers) {
 				nearbyLat += p.getLat();
 				nearbyLon += p.getLon();
 			}
-			nearbyLat = nearbyLat / (nearbyUsers.size()+1);
-			nearbyLon = nearbyLon / (nearbyUsers.size()+1);
+			nearbyLat = nearbyLat / (nearbyUsers.size());
+			nearbyLon = nearbyLon / (nearbyUsers.size());
+			if (Math.abs((nearbyLat - curLat) - (nearbyLon - curLng)) < 0.0000001) {
+				nearAngle = Math.PI * rand.nextDouble();
+			} else {
 			nearAngle = Math.tan(((nearbyLat - curLat) / (nearbyLon - curLng)))
 					+ Math.PI;
+			}
 		} else {
 			nearAngle = Math.PI * rand.nextDouble(); // means less backtracking
 		}
@@ -110,13 +114,13 @@ public class Algorithm {
 	private Person movement(double moveAngle2) {
 		double moveSpeed = (rand.nextDouble() * MAX_MOVE_SPEED);
 		if (moveSpeed < (MAX_MOVE_SPEED/2)) moveSpeed = (MAX_MOVE_SPEED/2);
-		curLat = moveSpeed * Math.sin(moveAngle2);
-		curLng = moveSpeed * Math.cos(moveAngle2);
+		curLat += moveSpeed * Math.sin(moveAngle2);
+		curLng += moveSpeed * Math.cos(moveAngle2);
 
 		double distFromCentre = Math.sqrt(Math.pow(curLat - CENTRE_LAT,2) + Math.pow(curLng - CENTRE_LON, 2));
 		if(distFromCentre > RADIUS){
-			curLat = RADIUS*(curLat/ (curLat + curLng));
-			curLng = RADIUS*(curLng/ (curLat + curLng));
+			curLat = RADIUS*(curLat/ (curLat + curLng)) + CENTRE_LAT;
+			curLng = RADIUS*(curLng/ (curLat + curLng)) + CENTRE_LON;
 		}
 			
 		newPos.setLat(curLat);
@@ -156,7 +160,7 @@ public class Algorithm {
 		int sign = 1;
 		if (vol < 0)
 			sign = -1;
-		return (sign * Math.pow(Math.abs(volatility), 1 / modifier));
+		return (sign * Math.pow(Math.abs(vol), 1 / modifier));
 	}
 	
 	/**
